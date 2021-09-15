@@ -10,6 +10,7 @@ import pandana, time, os, pandas as pd, numpy as np
 from pandana.loaders import osm
 
 app = dash.Dash(__name__)
+server = app.server
 
 
 # configure search at a max distance of 1 km for up to the 10 nearest points-of-interest
