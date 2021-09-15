@@ -65,7 +65,7 @@ start_time = time.time()
 if os.path.isfile(net_filename):
     # if a street network file already exists, just load the dataset from that
     network = pandana.network.Network.from_hdf5(net_filename)
-    method = 'loaded from HDF5'
+    method = 'loaded from HDF5' 
 else:
     # otherwise, query the OSM API for the street network within the specified bounding box
     network = osm.pdna_network_from_bbox(lat_min=bbox[0],lng_min=bbox[1], lat_max=bbox[2], lng_max=bbox[3])
