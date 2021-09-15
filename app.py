@@ -9,8 +9,20 @@ import pandas as pd
 import pandana, time, os, pandas as pd, numpy as np
 from pandana.loaders import osm
 
+
+
 app = dash.Dash(__name__)
 server = app.server
+
+app.layout = html.Div(children=[
+    html.H1(children='Hello Dash'),
+
+    html.Div(children='''
+        Dash: Loading...
+    '''),
+
+    
+])
 
 
 # configure search at a max distance of 1 km for up to the 10 nearest points-of-interest
@@ -114,8 +126,9 @@ fig = ff.create_hexbin_mapbox(
 
 fig.update_layout(mapbox_style="outdoors")
 #fig.data[0].hovertemplate = f'Point Count =%{z:,.1f}<extra>Average distance to a {amenity}</extra>'
-fig.show()
+#fig.show()
 
+print("showing figure")
 
 app.layout = html.Div(children=[
     html.H1(children='Hello Dash'),
