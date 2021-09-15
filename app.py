@@ -67,7 +67,7 @@ else:
     
     # using the '"amenity"~"school"' returns preschools etc, so drop any that aren't just 'school' then save to CSV
     pois = pois[pois['amenity'].isin(amenities)]
-    pois.to_csv(poi_filename, index=False, encoding='utf-8')
+    #pois.to_csv(poi_filename, index=False, encoding='utf-8')
     method = 'downloaded from OSM'
     
 print('{:,} POIs {} in {:,.2f} seconds'.format(len(pois), method, time.time()-start_time))
@@ -86,7 +86,7 @@ else:
     
     # identify nodes that are connected to fewer than some threshold of other nodes within a given distance
     lcn = network.low_connectivity_nodes(impedance=1000, count=10, imp_name='distance')
-    network.save_hdf5(net_filename, rm_nodes=lcn) #remove low-connectivity nodes and save to h5
+    #network.save_hdf5(net_filename, rm_nodes=lcn) #remove low-connectivity nodes and save to h5
     
 print('Network with {:,} nodes {} in {:,.2f} secs'.format(len(network.node_ids), method, time.time()-start_time))
 network.precompute(distance + 1)
