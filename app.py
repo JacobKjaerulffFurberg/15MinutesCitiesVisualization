@@ -68,7 +68,7 @@ else:
     
     # using the '"amenity"~"school"' returns preschools etc, so drop any that aren't just 'school' then save to CSV
     pois = pois[pois['amenity'].isin(amenities)]
-    #pois.to_csv(poi_filename, index=False, encoding='utf-8')
+    pois.to_csv(poi_filename, index=False, encoding='utf-8')
     method = 'downloaded from OSM'
     
 print('{:,} POIs {} in {:,.2f} seconds'.format(len(pois), method, time.time()-start_time))
@@ -76,18 +76,18 @@ pois[['amenity', 'name', 'lat', 'lon']].head()
 
 
 start_time = time.time()
-# if os.path.isfile(net_filename):
-#     # if a street network file already exists, just load the dataset from that
-#     network = pandana.network.Network.from_hdf5(net_filename)
-#     method = 'loaded from HDF5' 
-# else:
-# otherwise, query the OSM API for the street network within the specified bounding box
-network = osm.pdna_network_from_bbox(lat_min=bbox[0],lng_min=bbox[1], lat_max=bbox[2], lng_max=bbox[3])
-method = 'downloaded from OSM'
+if os.path.isfile(net_filename):
+    # if a street network file already exists, just load the dataset from that
+    network = pandana.network.Network.from_hdf5(net_filename)
+    method = 'loaded from HDF5' 
+else:
+    #otherwise, query the OSM API for the street network within the specified bounding box
+    network = osm.pdna_network_from_bbox(lat_min=bbox[0],lng_min=bbox[1], lat_max=bbox[2], lng_max=bbox[3])
+    method = 'downloaded from OSM'
 
-# identify nodes that are connected to fewer than some threshold of other nodes within a given distance
-lcn = network.low_connectivity_nodes(impedance=1000, count=10, imp_name='distance')
-#network.save_hdf5(net_filename, rm_nodes=lcn) #remove low-connectivity nodes and save to h5
+    # identify nodes that are connected to fewer than some threshold of other nodes within a given distance
+    lcn = network.low_connectivity_nodes(impedance=1000, count=10, imp_name='distance')
+    network.save_hdf5(net_filename, rm_nodes=lcn) #remove low-connectivity nodes and save to h5
 
 print('Network with {:,} nodes {} in {:,.2f} secs'.format(len(network.node_ids), method, time.time()-start_time))
 network.precompute(distance + 1)
