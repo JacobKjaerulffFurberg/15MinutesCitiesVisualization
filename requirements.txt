@@ -1,0 +1,6 @@
+pip install pandana
+pip install numpy
+pip install osmnet
+pip install overpy
+pip install mapboxgl
+pip install kaleido
