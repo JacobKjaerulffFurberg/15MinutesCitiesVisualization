@@ -19,7 +19,7 @@ num_pois = 10
 num_categories = len(amenities) + 1 #one for each amenity, plus one extra for all of them combined
 
 # bounding box as a list of llcrnrlat, llcrnrlng, urcrnrlat, urcrnrlng
-bbox = [55.6036813, 12.5202081, 55.6942218, 12.6150132] #[55.6336813, 12.5402081, 55.6742218, 12.5950132]  #lat-long bounding box for berkeley/oakland
+bbox = [55.6636813, 12.5202081, 55.6942218, 12.5550132] #[55.6336813, 12.5402081, 55.6742218, 12.5950132]  #lat-long bounding box for berkeley/oakland
 
 #(53.2987342,-6.3870259,53.4105416,-6.1148829)
 #[12.5795, 55.6775, 12.6081, 55.6688]
