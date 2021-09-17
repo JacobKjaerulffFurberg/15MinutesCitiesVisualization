@@ -125,7 +125,12 @@ fig = ff.create_hexbin_mapbox(
     color=f'{amenity}_distance',  color_continuous_scale='viridis_r'
 )
 
-fig.update_layout(mapbox_style="outdoors")
+#fig.update_layout(mapbox_style="outdoors")
+fig.update_layout(
+    autosize=False,
+    width=800,
+    height=800,
+    mapbox_style="outdoors",)
 #fig.data[0].hovertemplate = f'Point Count =%{z:,.1f}<extra>Average distance to a {amenity}</extra>'
 #fig.show()
 
