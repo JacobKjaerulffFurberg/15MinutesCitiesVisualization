@@ -1,3 +1,11 @@
+PopulationDensity2015.tif
+RocksDB - 2nd project tutorial
+drive-download-20210928T144640Z-001/
+gdal_polygonize.py
+output_shape_file/
+data/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
