@@ -6,7 +6,6 @@ gdal_polygonize.py
 output_shape_file/
 *.json
 *.tif
-*.csv
 *.png
 *.geojson
 *.mbtiles
