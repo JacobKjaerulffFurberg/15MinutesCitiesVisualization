@@ -5,6 +5,7 @@ drive-download-20210928T144640Z-001/
 gdal_polygonize.py
 output_shape_file/
 *.json
+*.csv
 *.tif
 *.png
 *.geojson
