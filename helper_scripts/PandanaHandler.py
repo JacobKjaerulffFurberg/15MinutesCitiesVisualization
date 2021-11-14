@@ -2,10 +2,11 @@ import pandana, time, os, pandas as pd, numpy as np
 from pandana.loaders import osm
 import pandas as pd
 import time
+from run_settings import settings
 
 def getPOIs(bbox, amenities = None):
     if not amenities:
-        amenities = ['restaurant', 'bar', 'school', 'toilets', 'college', 'hospital']#, 'hospital']
+        amenities = settings["amenities"]
         
     bbox_string = '_'.join([str(x) for x in bbox])
     poi_filename = '../data/pois_{}_{}.csv'.format('_'.join(amenities), bbox_string)
@@ -28,18 +29,17 @@ def getPOIs(bbox, amenities = None):
 
 
 def getAccessibilityMeasures(bbox = None, amenities = None, distance = None, num_pois = None):
-    # configure search at a max distance of 1 km for up to the 10 nearest points-of-interest
     if not amenities:
-        amenities = ['restaurant', 'bar', 'school', 'toilets', 'college', 'hospital']#, 'hospital']
+        amenities = settings["amenities"]
     if not distance:
-        distance = 1000
+        distance = settings["search_dist"]
     if not num_pois:
-        num_pois = 10
+        num_pois = settings["num_pois"]
     num_categories = len(amenities) + 1 #one for each amenity, plus one extra for all of them combined
 
     # bounding box as a list of llcrnrlat, llcrnrlng, urcrnrlat, urcrnrlng
     if not bbox: 
-        bbox = [55.6036813, 12.5202081, 55.6942218, 12.6150132]
+        bbox = settings["bbox"]
 
     print(bbox)
     # configure filenames to save/load POI and network datasets
