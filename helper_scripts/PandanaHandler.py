@@ -2,21 +2,44 @@ import pandana, time, os, pandas as pd, numpy as np
 from pandana.loaders import osm
 import pandas as pd
 import time
+from run_settings import settings
+
+def getPOIs(bbox, amenities = None):
+    if not amenities:
+        amenities = settings["amenities"]
+        
+    bbox_string = '_'.join([str(x) for x in bbox])
+    poi_filename = '../data/pois_{}_{}.csv'.format('_'.join(amenities), bbox_string)
+    
+    if os.path.isfile(poi_filename):
+        # if a points-of-interest file already exists, just load the dataset from that
+        pois = pd.read_csv(poi_filename)
+        method = 'loaded from CSV'
+    else:   
+        # otherwise, query the OSM API for the specified amenities within the bounding box 
+        osm_tags = '"amenity"~"{}"'.format('|'.join(amenities))
+        pois = osm.node_query(lat_min=bbox[0],lng_min=bbox[1], lat_max=bbox[2], lng_max=bbox[3], tags=osm_tags)
+
+        # using the '"amenity"~"school"' returns preschools etc, so drop any that aren't just 'school' then save to CSV
+        pois = pois[pois['amenity'].isin(amenities)]
+        pois.to_csv(poi_filename, index=False, encoding='utf-8')
+        method = 'downloaded from OSM'
+
+    return pois 
 
 
 def getAccessibilityMeasures(bbox = None, amenities = None, distance = None, num_pois = None):
-    # configure search at a max distance of 1 km for up to the 10 nearest points-of-interest
     if not amenities:
-        amenities = ['restaurant', 'bar', 'school', 'toilets', 'college', 'hospital']#, 'hospital']
+        amenities = settings["amenities"]
     if not distance:
-        distance = 1000
+        distance = settings["search_dist"]
     if not num_pois:
-        num_pois = 10
+        num_pois = settings["num_pois"]
     num_categories = len(amenities) + 1 #one for each amenity, plus one extra for all of them combined
 
     # bounding box as a list of llcrnrlat, llcrnrlng, urcrnrlat, urcrnrlng
     if not bbox: 
-        bbox = [55.6036813, 12.5202081, 55.6942218, 12.6150132]
+        bbox = settings["bbox"]
 
     print(bbox)
     # configure filenames to save/load POI and network datasets
