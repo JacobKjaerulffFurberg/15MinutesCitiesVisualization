@@ -105,4 +105,3 @@ def getAccessibilityMeasures(bbox = None, amenities = None, distance = None, num
         
     return temp_df
 
-

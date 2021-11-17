@@ -1,5 +1,5 @@
 # 15MinutesCitiesVisualization
-Research project for visualizing accessibility measures for cities.
+Research project for visualizing accessibility measures for cities. 
 
 
 ## Tools
