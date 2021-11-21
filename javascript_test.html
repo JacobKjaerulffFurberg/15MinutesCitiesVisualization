@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Change color with buttons</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.js"></script>
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+</head>
+<body>
+<style>
+.map-overlay {
+font: 12px/20px 'Helvetica Neue', Arial, Helvetica, sans-serif;
+position: absolute;
+width: 200px;
+top: 0;
+left: 0;
+padding: 10px;
+}
+ 
+.map-overlay .map-overlay-inner {
+background-color: #fff;
+box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+border-radius: 3px;
+padding: 10px;
+margin-bottom: 10px;
+}
+ 
+.map-overlay-inner fieldset {
+border: none;
+padding: 0;
+margin: 0 0 10px;
+}
+ 
+.map-overlay-inner fieldset:last-child {
+margin: 0;
+}
+ 
+.map-overlay-inner select {
+width: 100%;
+}
+ 
+.map-overlay-inner label {
+display: block;
+font-weight: bold;
+margin: 0 0 5px;
+}
+ 
+.map-overlay-inner button {
+display: inline-block;
+width: 36px;
+height: 20px;
+border: none;
+cursor: pointer;
+}
+ 
+.map-overlay-inner button:focus {
+outline: none;
+}
+ 
+.map-overlay-inner button:hover {
+box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+</style>
+ 
+<div id="map"></div>
+<div class="map-overlay top">
+<div class="map-overlay-inner">
+    <fieldset>
+        <label for="amenities">Choose amenities</label>
+        <select name="amenities" id="amenities" multiple class="chosen-select">
+        </select>
+    </fieldset>
+<fieldset>
+<div class="slidecontainer"  text-align="center">
+    <div><strong>Search distance</strong></div>
+    <div id="slider_text" text-align="center">2500 meters</div>
+    <input type="range" min="100" max="5000" value="2500" class="slider" id="slider">
+</div>
+<label>Choose a color</label>
+<div id="swatches"></div>
+</fieldset>
+<button id="view_access_and_density" width="fit-content">Swap</button>
+<fieldset>
+    <label for="amenities">Color grid</label>
+    <div name="color_grid" id="color_grid"></div>
+</fieldset>
+</div>
+</div>
+ 
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoiZ29vZGdhbWUiLCJhIjoiY2t0YTF2b3h6MWhobTJvcGRwc2NkNnY2ZyJ9.wV8JHtziMfNiGSLBdV4xXA';
+const map = new mapboxgl.Map({
+container: 'map',
+style: 'mapbox://styles/mapbox/outdoors-v10', // style URL for Mapbox Light
+center: [12.338, 55.8385],
+zoom: 8
+});
+ 
+const src = {
+type: 'vector',
+url: 'mapbox://goodgame.b6470sos'//'mapbox://goodgame.37blocyj'// 'mapbox://goodgame.dg06gsyu', //
+};
+
+map.on('load', () => {
+// Add a custom layer that uses
+// a vector tileset source.
+map.addLayer({
+id: 'polys',
+source: src,
+'source-layer': 'dk_100m_cleaned4_coalesce', //'cph_snippet_100m_cleaned4_coalesce', //'cph_snippet_100m_cleaned4', 
+type: 'fill-extrusion',
+'paint': {
+// Get the `fill-extrusion-color` from the source `color` property.
+//'fill-extrusion-color': ['get', 'color'],
+ 
+// Get `fill-extrusion-height` from the source `height` property.
+'fill-extrusion-height':['interpolate',
+                        ['linear'],
+                        ['get', 'population_density'],
+                        0, 0,
+                        320, 2000],
+
+//["*", 10, ['get', 'population_density']],
+ 
+// Get `fill-extrusion-base` from the source `base_height` property.
+'fill-extrusion-base': 0,
+ 
+// Make extrusions slightly opaque to see through indoor walls.
+'fill-extrusion-opacity': 0.8
+}
+});
+});
+
+const swatches = document.getElementById('swatches');
+const color_grid = document.getElementById('color_grid');
+const slider = document.getElementById('slider');
+const swap_color_button = document.getElementById('view_access_and_density');
+const slider_text = document.getElementById('slider_text');
+const amenities = document.getElementById('amenities');
+
+const colors = [
+'#41b6c4',
+'#2c7fb8',
+'#253494',
+'#fd8d3c',
+'#f03b20',
+'#bd0026'
+];
+
+const accessibility_metrics = {names: []}
+
+map.once('idle', () => {
+    // when map and base layer is successfully loaded
+    console.log("map and layer loaded...")
+
+    // find properties of first object
+    props = map.queryRenderedFeatures({layers: ['polys'], })[0].properties
+    
+    // get column names of accessibility metrics
+    accessibility_metrics.names = Object.keys(props).filter(p => p.startsWith("avg_"))
+    
+    // enable buttons
+    swatches.childNodes.forEach(s => s.disabled = false);
+    
+    // set default color
+    map.setPaintProperty("polys", 'fill-extrusion-color', '#ffffff');
+
+    for (const ame of accessibility_metrics.names) {
+        const amenity = document.createElement('option');  
+        amenity.setAttribute("value",ame);
+        amenity.innerHTML = ame;
+        //optionGroup.setAttribute("id","theid");    
+        amenities.append(amenity)     
+    }        
+});
+ 
+// create data operators for mapbox from list of property names 
+const dataOpForAverage = (lst) => {
+    if (lst.length === 0) return 5000
+    else return ["/", ['+'].concat(lst.map(s => ['get', s])), lst.length]
+}
+
+const dict = 
+{
+    0: '#F2D7D5', 0.1: '#FDEDEC', 0.2: '#F5EEF8', 0.3: '#F4ECF7 ', 0.4: '#EAF2F8',  0.5: '#EBF5FB', 
+    1: '#41b6c4',   1.5: '#2c7fb8',
+    2: '#253494',   2.5:'#fed976',
+    3: '#feb24c',   3.5:'#fd8d3c',
+    4: '#f03b20',   4.5:'#bd0026',
+    5: '#C0392B',
+    6: '#A93226',
+    7: '#922B21',
+    8: '#7B241C',
+    9: '#641E16',
+}
+
+
+var x = 0;
+var y = 0;
+for (const color of [  "#be64ac", "#8c62aa", "#3b4994", 
+                        "#dfb0d6", "#a5add3", "#5698b9", 
+                        "#e8e8e8", "#ace4e4", "#5ac8c8",]) {
+    
+    const b = document.createElement('button');
+   
+    b.style.backgroundColor = color;
+
+    color_grid.append(b);
+    x = x + 1;
+
+    if (x % 3 == 0) {
+        const br = document.createElement('br');
+        y = y + 1
+        color_grid.append(br);
+    }
+}
+console.log(Object.keys(dict).map(function(e, i) {
+  return [Object.values(dict)[i], e];
+}).flat());
+
+
+slider.addEventListener('change', (e) => {
+
+    slider_text.innerHTML = `${slider.value} meters`;
+    paintMapWithAcessibility();
+
+})
+
+amenities.addEventListener('change', (e) => {
+    
+    // queryRenderedFeatures is amazing!!!! srsly
+    //var features = map.queryRenderedFeatures({layers: ['polys']});
+const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
+    return v.value; 
+})
+
+paintMapWithAcessibility();
+});
+
+map.on('click', 'polys', function(e){
+	const coordinates = e.features[0].geometry.coordinates
+    const properties = e.features[0].properties;
+
+    const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
+        return v.value; 
+    })
+    console.log(properties)
+    var str = "";
+    for (const prop of selected) {
+        str = `${str}<strong>${prop}</strong>: ${Math.floor(properties[prop])}m<br/>`
+    }
+    for (const prop of ["osm_node_count"]) {
+        str = `${str}<strong>${prop}</strong>: ${Math.floor(properties[prop])}<br/>`
+    }
+
+    var description = str
+
+    console.log(Object.keys(properties).length)
+
+
+    console.log((coordinates[0][0][0], coordinates[0][0][1]));
+    const lnglat = new mapboxgl.LngLat(coordinates[0][0][0], coordinates[0][0][1]);
+    const popup = new mapboxgl.Popup()
+      popup.setHTML('Altitude: ' + 30000000 + 'm<br/>');
+      popup
+        .setLngLat(e.lngLat)
+        .setHTML(description)
+        .addTo(map);
+});
+
+var selected_color = colors[4]
+var i = 0;
+for (const color of colors) {
+    const swatch = document.createElement('button');
+    swatch.style.backgroundColor = color;
+    //swatch.disabled = true;
+    swatch.addEventListener('click', () => {
+        // queryRenderedFeatures is amazing!!!! srsly
+        //var features = map.queryRenderedFeatures({layers: ['polys']});
+        const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
+            return v.value; 
+        })
+        
+        selected_color = color;
+        
+        paintMapWithAcessibility(); 
+        
+        // console.log(map.querySourceFeatures('polys', {
+            // sourceLayer: 'cph_snippet_100m_cleaned4'
+            // }));
+            
+        });
+            swatches.appendChild(swatch);
+
+            i = i + 1;
+            if (i == 3) {
+                    const br = document.createElement('br');
+                    swatches.appendChild(br);
+                }
+}
+
+const paintMapWithAcessibility = () => {
+    const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
+        return v.value; 
+    })
+    const dist = parseInt(slider.value);
+    
+
+    map.setPaintProperty("polys", 'fill-extrusion-color', [
+                                       'interpolate',
+                                       ['linear'],
+                                       dataOpForAverage(selected),
+                                       0, selected_color,
+                                       dist, '#FFFFFF',//'#000000',
+                                     ]);
+}
+
+const paintMapWithDensityAndAcessibility = () => {
+    const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
+    return v.value; 
+})
+
+    map.setPaintProperty("polys", 'fill-extrusion-color', 
+
+            ["step", 
+            ["+", ["abs", ["-", ["/", dataOpForAverage(selected), 5000], 1]] ,["round", ["*", ["/", ['get', 'population_density'], 320], 3]]],//["+", ["round", ["*", ["abs", ["-", ["/", dataOpForAverage(selected), 5000], 1]], 3]] , 0], ["/", ['get', 'population_density'], 320]],
+            '#e8e8e8', 0.05 , '#ace4e4', 0.2, '#5ac8c8', 1,
+            '#dfb0d6', 1.05,   '#a5add3', 1.2, '#5698b9', 2,
+            '#be64ac', 2.05,  '#8c62aa', 2.2, '#3b4994', 4, '#000000'
+
+            ]
+
+            );
+}
+
+
+
+</script>
+ 
+</body>
+</html>

@@ -77,7 +77,7 @@ def getAccessibilityMeasures(bbox = None, amenities = None, distance = None, num
         method = 'downloaded from OSM'
 
         # identify nodes that are connected to fewer than some threshold of other nodes within a given distance
-        lcn = network.low_connectivity_nodes(impedance=1000, count=10, imp_name='distance')
+        lcn = network.low_connectivity_nodes(impedance=settings["search_dist"], count=10, imp_name='distance')
         network.save_hdf5(net_filename, rm_nodes=lcn) #remove low-connectivity nodes and save to h5
 
     print('Network with {:,} nodes {} in {:,.2f} secs'.format(len(network.node_ids), method, time.time()-start_time))

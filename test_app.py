@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objs as go
+import streamlit.components.v1 as components
 
 st.title('15 Minutes City')
 
@@ -47,4 +48,10 @@ fig = px.scatter_mapbox(
         color_continuous_scale="Viridis_r", #viridis reversed
         mapbox_style="outdoors",
     )
+
+
 st.plotly_chart(fig)
+
+HtmlFile = open("javascript_test.html", 'r', encoding='utf-8')
+source_code = HtmlFile.read() 
+components.html(source_code, height=800)
