@@ -239,7 +239,6 @@ map.once('idle', () => {
     // when map and base layer is successfully loaded
     console.log("map and layer loaded...")
 
-    console.log(map.getSource('polys'))
     // find properties of first object
     props = map.queryRenderedFeatures({layers: ['polys'], })[0].properties
     
