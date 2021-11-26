@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Change color with buttons</title>
+<title>15MinuteCities</title>
 <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 <link href="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v2.6.0/mapbox-gl.js"></script>
@@ -45,13 +45,13 @@ width: 100%;
 }
  
 .map-overlay-inner label {
-display: block;
+/* display: block; */
 font-weight: bold;
 margin: 0 0 5px;
 }
  
 .map-overlay-inner button {
-display: inline-block;
+/* display: inline-block; */
 width: 36px;
 height: 20px;
 border: none;
@@ -76,22 +76,44 @@ box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.1);
         </select>
     </fieldset>
 <fieldset>
-<div class="slidecontainer"  text-align="center">
-    <div><strong>Search distance</strong></div>
-    <div id="slider_text" text-align="center">2500 meters</div>
-    <input type="range" min="100" max="5000" value="2500" class="slider" id="slider">
-</div>
+
 <label>Choose a color</label>
 <div id="swatches"></div>
 </fieldset>
-<button id="view_access_and_density" width="fit-content">Swap</button>
+<div class="opacity_slider_container"  text-align="center">
+    <label>Opacity</label>
+    <div id="opacity_slider_text" text-align="center">80%</div>
+    <input type="range" min="0" max="100" value="80" class="opacity_slider" id="opacity_slider">
+</div>
+<div class="slidecontainer"  text-align="center">
+    <div><strong>Search distance</strong></div>
+    <div id="slider_text" text-align="center">2500 <em>meters</em></div>
+    <input type="range" min="100" max="5000" value="2500" class="slider" id="slider">
+</div>
+<div backgroundColor="black">
+    <label>Swap color mode</label>
+    <br/>
+    <button id="view_access_and_density" backgroundColor="black" width="100%" height="100%"></button>
+</div>
+<div class="population_slider_container" id="population_slider_container"  text-align="center" hidden>
+    <div><strong>What is high population density</strong></div>
+    <div id="population_slider_text" text-align="center">330 <em>persons per 3 arcsecond</em></div>
+    <input type="range" min="0" max="330" value="330" class="populationslider" id="population_slider">
+</div>
 <fieldset>
-    <label for="amenities">Color grid</label>
-    <div name="color_grid" id="color_grid"></div>
+    <div name="color_grid" id="color_grid" hidden>
+        <label for="amenities">Color grid</label>
+        <br/>
+    </div>
 </fieldset>
 </div>
 </div>
- 
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.min.js"></script>
+<link
+rel="stylesheet"
+href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.0/mapbox-gl-geocoder.css"
+type="text/css"
+/>
 <script>
 	mapboxgl.accessToken = 'pk.eyJ1IjoiZ29vZGdhbWUiLCJhIjoiY2t0YTF2b3h6MWhobTJvcGRwc2NkNnY2ZyJ9.wV8JHtziMfNiGSLBdV4xXA';
 const map = new mapboxgl.Map({
@@ -101,12 +123,58 @@ center: [12.338, 55.8385],
 zoom: 8
 });
  
+
+const geocoder = new MapboxGeocoder({
+// Initialize the geocoder
+accessToken: mapboxgl.accessToken, // Set the access token
+mapboxgl: mapboxgl, // Set the mapbox-gl instance
+marker: false, // Do not use the default marker style
+placeholder: 'Search for places in DK', // Placeholder text for the search bar
+bbox: [7.946, 54.540, 12.752, 57.793], //[-122.30937, 37.84214, -122.23715, 37.89838], // Boundary for Berkeley 
+proximity: {
+longitude: 10.2,
+latitude: 56,
+} // Coordinates of UC Berkeley
+});
+ 
+// Add the geocoder to the map
+map.addControl(geocoder);
+
+geocoder.on('result', (event) => {
+map.getSource('single-point').setData(event.result.geometry);
+});
+
+geocoder.on('clear', function () {
+    map.getSource('single-point').setData({
+'type': 'FeatureCollection',
+'features': []
+})
+})
+
 const src = {
 type: 'vector',
 url: 'mapbox://goodgame.b6470sos'//'mapbox://goodgame.37blocyj'// 'mapbox://goodgame.dg06gsyu', //
 };
 
 map.on('load', () => {
+
+    map.addSource('single-point', {
+'type': 'geojson',
+'data': {
+'type': 'FeatureCollection',
+'features': []
+}
+});
+ 
+map.addLayer({
+'id': 'point',
+'source': 'single-point',
+'type': 'circle',
+'paint': {
+'circle-radius': 10,
+'circle-color': '#448ee4'
+}
+});
 // Add a custom layer that uses
 // a vector tileset source.
 map.addLayer({
@@ -138,10 +206,15 @@ type: 'fill-extrusion',
 
 const swatches = document.getElementById('swatches');
 const color_grid = document.getElementById('color_grid');
-const slider = document.getElementById('slider');
 const swap_color_button = document.getElementById('view_access_and_density');
-const slider_text = document.getElementById('slider_text');
 const amenities = document.getElementById('amenities');
+const slider = document.getElementById('slider');
+const slider_text = document.getElementById('slider_text');
+const opacity_slider = document.getElementById('opacity_slider');
+const opacity_slider_text = document.getElementById('opacity_slider_text');
+const population_slider = document.getElementById('population_slider');
+const population_slider_text = document.getElementById('population_slider_text');
+const population_slider_container = document.getElementById('population_slider_container');
 
 const colors = [
 '#41b6c4',
@@ -152,12 +225,21 @@ const colors = [
 '#bd0026'
 ];
 
-const accessibility_metrics = {names: []}
+// map.on('idle', (e) => { 
+//     const renderedFeatures = map.queryRenderedFeatures({layers: ['polys'], })
+//     console.log(renderedFeatures)
+//     console.log(renderedFeatures.reduce((acc, f) => f.properties.population_density + acc,0))
+//     console.log(renderedFeatures.reduce((acc, f) => f.properties.avg_bar_dist + acc,0) / renderedFeatures.length)
+// })
+
+const settings = {color_style: "accessibility"}
+const accessibility_metrics = {names: [],}
 
 map.once('idle', () => {
     // when map and base layer is successfully loaded
     console.log("map and layer loaded...")
 
+    console.log(map.getSource('polys'))
     // find properties of first object
     props = map.queryRenderedFeatures({layers: ['polys'], })[0].properties
     
@@ -176,7 +258,10 @@ map.once('idle', () => {
         amenity.innerHTML = ame;
         //optionGroup.setAttribute("id","theid");    
         amenities.append(amenity)     
-    }        
+    }
+    amenities.childNodes[1].selected = "selected";     
+    
+    paintMap();
 });
  
 // create data operators for mapbox from list of property names 
@@ -185,27 +270,25 @@ const dataOpForAverage = (lst) => {
     else return ["/", ['+'].concat(lst.map(s => ['get', s])), lst.length]
 }
 
-const dict = 
-{
-    0: '#F2D7D5', 0.1: '#FDEDEC', 0.2: '#F5EEF8', 0.3: '#F4ECF7 ', 0.4: '#EAF2F8',  0.5: '#EBF5FB', 
-    1: '#41b6c4',   1.5: '#2c7fb8',
-    2: '#253494',   2.5:'#fed976',
-    3: '#feb24c',   3.5:'#fd8d3c',
-    4: '#f03b20',   4.5:'#bd0026',
-    5: '#C0392B',
-    6: '#A93226',
-    7: '#922B21',
-    8: '#7B241C',
-    9: '#641E16',
-}
+
+// colorful mode
+const grid_colors = [   ["#e8e8e8", "#ace4e4", "#5ac8c8"],
+                        ["#dfb0d6", "#a5add3", "#5698b9"],
+                        ["#be64ac", "#8c62aa", "#3b4994"], ]
+
+// colorblind friendly mode
+
+// const grid_colors = [   ["#E7E7E7", "#B7BFD8", "#7382B2"],
+//                         ["#C0D5BE", "#99B1B1", "#627892"],
+//                         ["#7A9D75", "#64846E", "#3A5354"], ]
+
 
 
 var x = 0;
 var y = 0;
-for (const color of [  "#be64ac", "#8c62aa", "#3b4994", 
-                        "#dfb0d6", "#a5add3", "#5698b9", 
-                        "#e8e8e8", "#ace4e4", "#5ac8c8",]) {
+for (const color of grid_colors.slice().reverse().flat()) {
     
+
     const b = document.createElement('button');
    
     b.style.backgroundColor = color;
@@ -219,27 +302,59 @@ for (const color of [  "#be64ac", "#8c62aa", "#3b4994",
         color_grid.append(br);
     }
 }
-console.log(Object.keys(dict).map(function(e, i) {
-  return [Object.values(dict)[i], e];
-}).flat());
 
 
 slider.addEventListener('change', (e) => {
-
-    slider_text.innerHTML = `${slider.value} meters`;
-    paintMapWithAcessibility();
-
+    slider_text.innerHTML = `${slider.value} <em>meters</em>`;
+    paintMap();
 })
+
+opacity_slider.addEventListener('change', (e) => {
+    opacity_slider_text.innerHTML = `${opacity_slider.value}%`;
+    paintMap();
+})
+
+population_slider.addEventListener('change', (e) => {
+    population_slider_text.innerHTML = `${population_slider.value} <em>persons per 3 arcsecond</em>`;
+    paintMap();
+})
+
+swap_color_button.addEventListener('click', (e) => {
+    // change to different color mode
+    if (settings.color_style == "accessibility")
+    {
+        population_slider_container.hidden = false;
+        color_grid.hidden = false;
+        settings.color_style = "mix"
+    } else {
+        population_slider_container.hidden = true;
+        color_grid.hidden = true;
+        settings.color_style = "accessibility"
+    }
+    paintMap();
+})
+
+const paintMap = () => {
+    map.setPaintProperty(
+        'polys',
+        'fill-extrusion-opacity',
+        opacity_slider.value / 100
+        );
+    if (settings.color_style == "accessibility")
+    {
+        paintMapWithAcessibility();
+    } else {
+        paintMapWithDensityAndAcessibility();
+    }
+}
 
 amenities.addEventListener('change', (e) => {
     
     // queryRenderedFeatures is amazing!!!! srsly
     //var features = map.queryRenderedFeatures({layers: ['polys']});
-const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
-    return v.value; 
-})
 
-paintMapWithAcessibility();
+
+paintMap();
 });
 
 map.on('click', 'polys', function(e){
@@ -249,24 +364,26 @@ map.on('click', 'polys', function(e){
     const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
         return v.value; 
     })
-    console.log(properties)
     var str = "";
     for (const prop of selected) {
         str = `${str}<strong>${prop}</strong>: ${Math.floor(properties[prop])}m<br/>`
     }
-    for (const prop of ["osm_node_count"]) {
+    for (const prop of ["population_density", "osm_node_count"]) {
         str = `${str}<strong>${prop}</strong>: ${Math.floor(properties[prop])}<br/>`
     }
 
     var description = str
 
-    console.log(Object.keys(properties).length)
 
-
-    console.log((coordinates[0][0][0], coordinates[0][0][1]));
-    const lnglat = new mapboxgl.LngLat(coordinates[0][0][0], coordinates[0][0][1]);
+    var lngLat = null;
+    // check  if users is selcting tile with multiple features inside
+    if (coordinates[0][0][0].constructor.name == "Array") {
+        lnglat = new mapboxgl.LngLat(coordinates[0][0][0][0], coordinates[0][0][0][1]);
+    } else {
+        lnglat = new mapboxgl.LngLat(coordinates[0][0][0], coordinates[0][0][1]);
+    }
     const popup = new mapboxgl.Popup()
-      popup.setHTML('Altitude: ' + 30000000 + 'm<br/>');
+      //popup.setHTML('Altitude: ' + 30000000 + 'm<br/>');
       popup
         .setLngLat(e.lngLat)
         .setHTML(description)
@@ -282,13 +399,10 @@ for (const color of colors) {
     swatch.addEventListener('click', () => {
         // queryRenderedFeatures is amazing!!!! srsly
         //var features = map.queryRenderedFeatures({layers: ['polys']});
-        const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
-            return v.value; 
-        })
         
         selected_color = color;
         
-        paintMapWithAcessibility(); 
+        paintMap();
         
         // console.log(map.querySourceFeatures('polys', {
             // sourceLayer: 'cph_snippet_100m_cleaned4'
@@ -308,7 +422,7 @@ const paintMapWithAcessibility = () => {
     const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
         return v.value; 
     })
-    const dist = parseInt(slider.value);
+    const search_dist = parseInt(slider.value);
     
 
     map.setPaintProperty("polys", 'fill-extrusion-color', [
@@ -316,7 +430,7 @@ const paintMapWithAcessibility = () => {
                                        ['linear'],
                                        dataOpForAverage(selected),
                                        0, selected_color,
-                                       dist, '#FFFFFF',//'#000000',
+                                       search_dist, '#FFFFFF',//'#000000',
                                      ]);
 }
 
@@ -324,14 +438,18 @@ const paintMapWithDensityAndAcessibility = () => {
     const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
     return v.value; 
 })
+    const search_dist = parseInt(slider.value);
+    const population_max = parseInt(population_slider.value);
+    const steps = Array.from({length: 3}, (_, i) => 0.333 * (1+i)) //[0.33, 0.66, 1]//[0.05, 0.2, 1]
 
     map.setPaintProperty("polys", 'fill-extrusion-color', 
 
             ["step", 
-            ["+", ["abs", ["-", ["/", dataOpForAverage(selected), 5000], 1]] ,["round", ["*", ["/", ['get', 'population_density'], 320], 3]]],//["+", ["round", ["*", ["abs", ["-", ["/", dataOpForAverage(selected), 5000], 1]], 3]] , 0], ["/", ['get', 'population_density'], 320]],
-            '#e8e8e8', 0.05 , '#ace4e4', 0.2, '#5ac8c8', 1,
-            '#dfb0d6', 1.05,   '#a5add3', 1.2, '#5698b9', 2,
-            '#be64ac', 2.05,  '#8c62aa', 2.2, '#3b4994', 4, '#000000'
+            ["+",  ["floor", ["*", ["min", ["/", ['get', 'population_density'], population_max], 0.99], 3]], ["abs", ["-", ["min", ["/", dataOpForAverage(selected), search_dist], 0.99], 0.99]]],//["+",  ["floor", ["*", ["/", ['get', 'population_density'], 330], 2]],["abs", ["-", ["max", ["/", dataOpForAverage(selected), search_dist], 0.999 ], 1]]],
+            grid_colors[0][0], steps[0] , grid_colors[0][1], steps[1], grid_colors[0][2], steps[2],
+            grid_colors[1][0], 1 + steps[0],   grid_colors[1][1], 1 + steps[1], grid_colors[1][2], 1 + steps[2],
+            grid_colors[2][0], 2 + steps[0],  grid_colors[2][1], 2 + steps[1], grid_colors[2][2], 3, 
+            '#000000'
 
             ]
 
