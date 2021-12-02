@@ -189,3 +189,8 @@ st.plotly_chart(fig)
 st.header("15 Minute Cities")
 context = '<p style="color:black; font-size: 20px;">The continuous rise in urbanisation has made cities’ ability to be inclusive and sustainable a global focus (Moreno et al., 2021; Graells-Garrido et al., 2021). Carlos Moreno introduced the concept of The 15-minute City to describe the idea of an urban city where inhabitants have immediate access to essential services (Moreno et al., 2021). Rather than humans adapting to the urban space, he argues that urban spaces should be designed (or re-designed) to adapt to human needs (Moreno et al., 2021). The 15-minute initiative and others like it are an attempt to rethink our way of structuring cities to best accommodate as many citizens as possible, and to minimise transportation pollution. However, a redesign of our cities requires an understanding of the current arrangement. How is accessibility measures currently distributed?</p>'
 st.markdown(context, unsafe_allow_html = True)
+
+
+HtmlFile = open("javascript_test.html", 'r', encoding='utf-8')
+source_code = HtmlFile.read() 
+components.html(source_code, height=800)
