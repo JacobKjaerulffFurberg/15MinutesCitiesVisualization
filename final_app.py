@@ -26,10 +26,10 @@ col1, col2 = st.columns([3,1])
 with col1:
     description1 = '<p style="color:black; font-size: 20px;">This webpage is developed as part of a research project at the IT University of Copenhagen. The project attempts to address the problem of how to simultaneously visualize population density and accessibility measures of a city. This webpage works as a prototype and consists of an interactive map which allows you to explore the amenities and the density in various areas of the city of Copenhagen. The map is developed utilising the Pandana (source) and Mapbox (source) frameworks, and builds upon data on amenities from OpenStreetMap (source) and population data from WorldPop (source).</p>'
     st.markdown(description1, unsafe_allow_html = True)
-    description2 = '<p style="color:black; font-size: 20px;">The interactive map is divided into areas of a size 100m X 100m. For each area the average distance to the selected amenities in relation to the number of people is visualised as a color combination. The color represents the relation between the density and average distance and can be interpreted utilising the matrix to the left.</p>'
+    description2 = '<p style="color:black; font-size: 20px;">The interactive map is divided into areas of a size 100m X 100m. For each area the average distance to the selected amenities in relation to the number of people is visualised as a color combination. The color represents the relation between the density and average distance and can be interpreted utilising the matrix to the right.</p>'
     st.markdown(description2, unsafe_allow_html = True)
     st.subheader('Instructions')
-    instruction = '<p style="color:black; font-size: 20px;">To interact with the map of Copenhagen see the input options in the sidebar. By default the map will showcase </p>'
+    instruction = '<p style="color:black; font-size: 20px;">To interact with the map of Copenhagen see the input options in the sidebar. By default the map will showcase the average distance to all amenities in relation to the size of the population. Initially the longest distance and the highest population count in the dataset are considered as the farthest distance and highest density on the map. This can be toglled by the sliders to your left. The number of amenities disblayed can be changed utilising the multiselect box. </p>'
     st.markdown(instruction, unsafe_allow_html = True)
 
 # Create a text element and let the reader know the data is loading.
