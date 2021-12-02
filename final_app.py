@@ -117,7 +117,15 @@ data['scaled_max_pop'] = scaled_df['max_pop']
 pca_df = data[['scaled_max_pop', 'scaled_max_acc']]
 
 eig_vals, eig_vecs = np.linalg.eig(np.cov(pca_df.T))
-projected_X = pca_df.dot(eig_vecs.T[1])
+
+# Choosing bigger Eigen value
+def chooseEigenVal(eig_vals):
+    if eig_vals[0] >= eig_vals[1]:
+        return 0
+    else:
+        return 1
+
+projected_X = pca_df.dot(eig_vecs.T[chooseEigenVal(eig_vals)])
 
 data['PCA'] = projected_X
 data['modifiedPCA'] = projected_X + 1
