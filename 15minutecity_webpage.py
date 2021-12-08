@@ -143,22 +143,41 @@ def map_of_copenhagen():
         data['scaled_max_pop'] = scaled_df['max_pop']
 
         pca_df = data[['scaled_max_pop', 'scaled_max_acc']]
+        
+        #Adding fake data points 
+        pca_df.loc[len(pca_df.index)] = [1, 1] 
+        pca_df.loc[len(pca_df.index)] = [0, 1] 
+        pca_df.loc[len(pca_df.index)] = [1, 0] 
+        pca_df.loc[len(pca_df.index)] = [0, 0]
 
         eig_vals, eig_vecs = np.linalg.eig(np.cov(pca_df.T))
 
-        # Choosing bigger Eigen value
-        def chooseEigenVal(eig_vals):
+        def chooseBiggerEigenVal(eig_vals):
             if eig_vals[0] >= eig_vals[1]:
                 return 0
             else:
                 return 1
 
-        projected_X = pca_df.dot(eig_vecs.T[chooseEigenVal(eig_vals)])
+        projected_X = pca_df.dot(eig_vecs.T[chooseBiggerEigenVal(eig_vals)])
 
-        data['PCA'] = projected_X
-        data['modifiedPCA'] = projected_X + 1
-        data['y_axis'] = 0.0
+        
+        pca_df['PCA'] = projected_X
+        data = pd.concat([data, pca_df], axis=1)
+        
+        data = data.fillna(0)
+        data.iloc[-4:, data.columns.get_loc('lon')] = 12.611250
+        data.iloc[-4:, data.columns.get_loc('lat')] = 55.60375
+        
+#         data['PCA'] = projected_X
+        
 
+
+#         pca_df.rename(columns = {'population_density':'scaled_pop', 'avg_user_selection':'scaled_acc'}, inplace = True)
+
+
+
+
+        
     # Create map of Copenhagen
     with col2:
         legend = px.scatter(data, x='scaled_pop', y='scaled_acc', color='PCA', width=400, height=400, title='Color Scheme')
