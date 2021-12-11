@@ -77,7 +77,7 @@ box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.1);
     </fieldset>
 <fieldset>
 
-<label>Choose a color</label>
+<!-- <label>Choose a color</label> -->
 <div id="swatches"></div>
 </fieldset>
 <div class="opacity_slider_container"  text-align="center">
@@ -217,12 +217,12 @@ const population_slider_text = document.getElementById('population_slider_text')
 const population_slider_container = document.getElementById('population_slider_container');
 
 const colors = [
-'#41b6c4',
-'#2c7fb8',
-'#253494',
-'#fd8d3c',
-'#f03b20',
-'#bd0026'
+// '#41b6c4',
+// '#2c7fb8',
+//'#253494',
+// '#fd8d3c',
+ '#f03b20',
+//'#bd0026'
 ];
 
 // map.on('idle', (e) => { 
@@ -271,15 +271,15 @@ const dataOpForAverage = (lst) => {
 
 
 // colorful mode
-const grid_colors = [   ["#e8e8e8", "#ace4e4", "#5ac8c8"],
-                        ["#dfb0d6", "#a5add3", "#5698b9"],
-                        ["#be64ac", "#8c62aa", "#3b4994"], ]
+// const grid_colors = [   ["#e8e8e8", "#ace4e4", "#5ac8c8"],
+//                         ["#dfb0d6", "#a5add3", "#5698b9"],
+//                         ["#be64ac", "#8c62aa", "#3b4994"], ]
 
 // colorblind friendly mode
 
-// const grid_colors = [   ["#E7E7E7", "#B7BFD8", "#7382B2"],
-//                         ["#C0D5BE", "#99B1B1", "#627892"],
-//                         ["#7A9D75", "#64846E", "#3A5354"], ]
+const grid_colors = [   ["#E7E7E7", "#B7BFD8", "#7382B2"],
+                        ["#C0D5BE", "#99B1B1", "#627892"],
+                        ["#7A9D75", "#64846E", "#3A5354"], ]
 
 
 
@@ -389,33 +389,33 @@ map.on('click', 'polys', function(e){
         .addTo(map);
 });
 
-var selected_color = colors[4]
+var selected_color = colors[0]
 var i = 0;
-for (const color of colors) {
-    const swatch = document.createElement('button');
-    swatch.style.backgroundColor = color;
-    //swatch.disabled = true;
-    swatch.addEventListener('click', () => {
-        // queryRenderedFeatures is amazing!!!! srsly
-        //var features = map.queryRenderedFeatures({layers: ['polys']});
+// for (const color of colors) {
+//     const swatch = document.createElement('button');
+//     swatch.style.backgroundColor = color;
+//     //swatch.disabled = true;
+//     swatch.addEventListener('click', () => {
+//         // queryRenderedFeatures is amazing!!!! srsly
+//         //var features = map.queryRenderedFeatures({layers: ['polys']});
         
-        selected_color = color;
+//         selected_color = color;
         
-        paintMap();
+//         paintMap();
         
-        // console.log(map.querySourceFeatures('polys', {
-            // sourceLayer: 'cph_snippet_100m_cleaned4'
-            // }));
+//         // console.log(map.querySourceFeatures('polys', {
+//             // sourceLayer: 'cph_snippet_100m_cleaned4'
+//             // }));
             
-        });
-            swatches.appendChild(swatch);
+//         });
+//             swatches.appendChild(swatch);
 
-            i = i + 1;
-            if (i == 3) {
-                    const br = document.createElement('br');
-                    swatches.appendChild(br);
-                }
-}
+//             i = i + 1;
+//             if (i == 3) {
+//                     const br = document.createElement('br');
+//                     swatches.appendChild(br);
+//                 }
+// }
 
 const paintMapWithAcessibility = () => {
     const selected = Array.prototype.slice.call(document.querySelectorAll('option:checked'),0).map(function(v,i,a) { 
