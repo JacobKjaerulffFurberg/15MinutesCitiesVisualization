@@ -1,3 +1,4 @@
+from os import error
 import streamlit as st
 import streamlit.components.v1 as components
 import pandas as pd
@@ -36,7 +37,7 @@ def front_page():
     st.header('🗺️ The 15 Minute City')
     context = '<p style="color:black; font-size: 20px;">The continuous rise in urbanisation has made cities’ ability to be inclusive and sustainable a global focus (Moreno et al., 2021; Graells-Garrido et al., 2021). Carlos Moreno introduced the concept of The 15-minute City to describe the idea of an urban city where inhabitants have immediate access to essential services (Moreno et al., 2021). Rather than humans adapting to the urban space, he argues that urban spaces should be designed (or re-designed) to adapt to human needs (Moreno et al., 2021). The 15-minute initiative and others like it are an attempt to rethink our way of structuring cities to best accommodate as many citizens as possible, and to minimise transportation pollution. However, a redesign of our cities requires an understanding of the current arrangement. How is accessibility measures currently distributed?</p>'
     st.markdown(context, unsafe_allow_html = True)
-    introduction = '<p style="color:black; font-size: 20px;">This webpage is developed as part of a research project at the IT University of Copenhagen. The project attempts to address the problem of how to simultaneously visualize population density and accessibility measures of a city. The webpage works as a prototype and consists of two interactive maps. One of Copenhagen and one of the entirety of Denmark. Both allow you to explore areas and their distance to various amenities and population density. The maps are developed utilising the Pandana (source) and Mapbox (source) frameworks, and build upon data on amenities from OpenStreetMap (source) and population data from WorldPop (source).</p>'
+    introduction = '<p style="color:black; font-size: 20px;">This webpage is developed as part of a research project at the IT University of Copenhagen. The project attempts to address the problem of how to simultaneously visualize population density and accessibility measures of a city. The webpage works as a prototype and consists of two interactive maps. One of Copenhagen and one of the entirety of Denmark. Both allow you to explore areas and their distance to various amenities and population density. The maps are developed utilising the Pandana (Foti & Waddell, 2012) and Mapbox (Mapbox, 2021) frameworks, and build upon data on amenities from OpenStreetMap (© OpenStreetMap contributors) and population data from WorldPop (WorldPop, 2021).</p>'
     st.markdown(introduction, unsafe_allow_html = True)
     
 
@@ -77,7 +78,7 @@ def map_of_copenhagen():
         st.markdown(description_cph2, unsafe_allow_html = True)
         instruction_header_cph = '<p style="color:black; font-size: 22px;">Instructions</p>'
         st.markdown(instruction_header_cph, unsafe_allow_html = True)
-        instruction_cph = '<p style="color:black; font-size: 20px;">To interact with the map of Copenhagen see the input options in the sidebar. By default the map will showcase the average distance to all amenities in relation to the size of the population. Initially the longest distance and the highest population count in the dataset are considered as the farthest distance and highest density on the map. This can be toglled by the sliders to your left. The number of amenities disblayed can be changed utilising the multiselect box. </p>'
+        instruction_cph = '<p style="color:black; font-size: 20px;">To interact with the map of Copenhagen see the input options in the sidebar. By default the map will showcase the average distance to all amenities in relation to the size of the population. Initially the longest distance and the highest population count in the dataset are considered as the farthest distance and highest density on the map. This can be toggled by the sliders to your left. The number of amenities disblayed can be changed utilising the multiselect box. </p>'
         st.markdown(instruction_cph, unsafe_allow_html = True)
 
         # Create a text element and let the reader know the data is loading.
@@ -108,9 +109,13 @@ def map_of_copenhagen():
         if all_options:
             user_choice = container.multiselect("Select one or more options:",
                 list(choices),list(choices))
+        
         else:
             user_choice = container.multiselect("Select one or more options:",
                 list(choices))
+            if len(user_choice) < 1:
+                raise Exception('Please select minimum one amenity.')
+    
 
         st.sidebar.subheader('Select Max Values')
         st.sidebar.write("Below you can select what is categorised as high distance and high density. The colourmap will be updated accordingly.")
@@ -137,10 +142,10 @@ def map_of_copenhagen():
 
         scaled_df['max_dist'] = abs(scaled_df['max_dist']-1)
 
-        scaled_df.loc[len(scaled_df.index)] = [1, 1] 
-        scaled_df.loc[len(scaled_df.index)] = [0, 1] 
-        scaled_df.loc[len(scaled_df.index)] = [1, 0] 
-        scaled_df.loc[len(scaled_df.index)] = [0, 0] 
+        # scaled_df.loc[len(scaled_df.index)] = [1, 1] 
+        # scaled_df.loc[len(scaled_df.index)] = [0, 1] 
+        # scaled_df.loc[len(scaled_df.index)] = [1, 0] 
+        # scaled_df.loc[len(scaled_df.index)] = [0, 0] 
 
         scaled_df.rename(columns = {'max_pop':'scaled_pop', 'max_dist':'scaled_acc'}, inplace = True)
 
@@ -165,7 +170,13 @@ def map_of_copenhagen():
         
     # Create map of Copenhagen
     with col2:
-        legend = px.scatter(data, x='scaled_pop', y='scaled_acc', color='PCA', width=400, height=400, title='Color Scheme')
+        legend = px.scatter(data, x='scaled_pop', y='scaled_acc', color='PCA', width=400, height=400, title='Color Scheme',
+                            hover_data={'scaled_pop':False, # remove scaled_pop from hover data
+                                        'scaled_acc':False, # remove scaled_pop from hover data
+                                        'PCA':False, #remove PCa value from hover data
+                                        'population_density': ':.1f', #add population count to hover data
+                                        'avg_user_selection': ':.1f' #add population count to hover data
+                            })
         legend.update_layout(
             font = dict(
                 size=18
@@ -200,12 +211,17 @@ def map_of_copenhagen():
         )
         st.plotly_chart(legend)
 
-
     px.set_mapbox_access_token(open(".mapbox_token").read())
     fig = px.scatter_mapbox(
             data, 
             lon="lon", lat="lat", 
-            hover_data=["population_density"] + user_choice + ["avg_user_selection"],
+            hover_data={'lon':False, #remove lon from hover data
+                        'lat':False, #remove lat from hover data
+                        'PCA':False, #remove PCA from hover data
+                        'population_density': ':.1f', #add population count to hover data
+                        'avg_user_selection': ':.1f', #add population count to hover data
+                        **{c: True for c in data.columns if c in user_choice}
+                    },
             #size="population_density",
             color="PCA",
             mapbox_style="outdoors",
