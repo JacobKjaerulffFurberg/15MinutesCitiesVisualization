@@ -206,7 +206,7 @@ def map_of_copenhagen():
             data, 
             lon="lon", lat="lat", 
             hover_data=["population_density"] + user_choice + ["avg_user_selection"],
-            size="population_density",
+            #size="population_density",
             color="PCA",
             mapbox_style="outdoors",
             width=1800,
