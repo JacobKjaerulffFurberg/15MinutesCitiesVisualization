@@ -127,52 +127,37 @@ def map_of_copenhagen():
 
 
         #PCA color
-        sample = data[["population_density", "avg_user_selection", "max_dist", "max_pop"]]
-
+        sample = data[["max_dist", "max_pop"]]
+        
         # Scale(normalize) the data attributes between 0-1
         scaler = preprocessing.MinMaxScaler()
         names = sample.columns
         d = scaler.fit_transform(sample)
         scaled_df = pd.DataFrame(d, columns=names)
 
-        # Adding scaled data rows in the original data frame 
+        scaled_df['max_dist'] = abs(scaled_df['max_dist']-1)
 
-        data['scaled_acc'] = abs(scaled_df['avg_user_selection']-1)
-        data['scaled_pop'] = scaled_df['population_density']
-        data['scaled_max_acc'] = abs(scaled_df['max_dist']-1)
-        data['scaled_max_pop'] = scaled_df['max_pop']
+        scaled_df.loc[len(scaled_df.index)] = [1, 1] 
+        scaled_df.loc[len(scaled_df.index)] = [0, 1] 
+        scaled_df.loc[len(scaled_df.index)] = [1, 0] 
+        scaled_df.loc[len(scaled_df.index)] = [0, 0] 
 
-        pca_df = data[['scaled_max_pop', 'scaled_max_acc']]
-        
-        #Adding fake data points 
-        pca_df.loc[len(pca_df.index)] = [1, 1] 
-        pca_df.loc[len(pca_df.index)] = [0, 1] 
-        pca_df.loc[len(pca_df.index)] = [1, 0] 
-        pca_df.loc[len(pca_df.index)] = [0, 0]
+        scaled_df.rename(columns = {'max_pop':'scaled_pop', 'max_dist':'scaled_acc'}, inplace = True)
 
-        eig_vals, eig_vecs = np.linalg.eig(np.cov(pca_df.T))
+        eig_vals, eig_vecs = np.linalg.eig(np.cov(scaled_df.T))
 
-        def chooseBiggerEigenVal(eig_vals):
-            if eig_vals[0] >= eig_vals[1]:
-                return 0
-            else:
-                return 1
+        def chooseEigenVal(eig_vals):
+            return 0 if eig_vals[0] >= eig_vals[1] else 1
 
-        projected_X = pca_df.dot(eig_vecs.T[chooseBiggerEigenVal(eig_vals)])
+        projected_X = scaled_df.dot(eig_vecs.T[chooseEigenVal(eig_vals)])
+        scaled_df['PCA'] = projected_X
 
-        
-        pca_df['PCA'] = projected_X
-        data = pd.concat([data, pca_df], axis=1)
-        
+
+        data = pd.concat([data, scaled_df], axis=1) 
+
         data = data.fillna(0)
         data.iloc[-4:, data.columns.get_loc('lon')] = 12.611250
         data.iloc[-4:, data.columns.get_loc('lat')] = 55.60375
-        
-#         data['PCA'] = projected_X
-        
-
-
-#         pca_df.rename(columns = {'population_density':'scaled_pop', 'avg_user_selection':'scaled_acc'}, inplace = True)
 
 
 
