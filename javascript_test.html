@@ -50,21 +50,7 @@ font-weight: bold;
 margin: 0 0 5px;
 }
  
-.map-overlay-inner button {
-/* display: inline-block; */
-width: 36px;
-height: 20px;
-border: none;
-cursor: pointer;
-}
- 
-.map-overlay-inner button:focus {
-outline: none;
-}
- 
-.map-overlay-inner button:hover {
-box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.1);
-}
+
 </style>
  
 <div id="map"></div>
@@ -82,27 +68,30 @@ box-shadow: inset 0 0 0 3px rgba(0, 0, 0, 0.1);
 </fieldset>
 <div class="opacity_slider_container"  text-align="center">
     <label>Opacity</label>
-    <div id="opacity_slider_text" text-align="center">80%</div>
-    <input type="range" min="0" max="100" value="80" class="opacity_slider" id="opacity_slider">
+    <div id="opacity_slider_text" text-align="center">90%</div>
+    <input type="range" min="0" max="100" value="90" class="opacity_slider" id="opacity_slider">
 </div>
 <div class="slidecontainer"  text-align="center">
-    <div><strong>Search distance</strong></div>
+    <div><strong>Pick a max search distance</strong></div>
     <div id="slider_text" text-align="center">2500 <em>meters</em></div>
     <input type="range" min="100" max="5000" value="2500" class="slider" id="slider">
 </div>
+<br/>
 <div backgroundColor="black">
-    <label>Swap color mode</label>
-    <br/>
-    <button id="view_access_and_density" backgroundColor="black" width="100%" height="100%"></button>
+    
+    <!-- <div id="view_access_and_density" backgroundColor="black" width="100%" height="100%"></div> -->
+    <button id="view_access_and_density" color ="black" width="200%" height="100%">Toggle Bivariate map</button>
 </div>
 <div class="population_slider_container" id="population_slider_container"  text-align="center" hidden>
-    <div><strong>What is high population density</strong></div>
+    <div><strong>Pick a max population density</strong></div>
     <div id="population_slider_text" text-align="center">330 <em>persons per 3 arcsecond</em></div>
     <input type="range" min="0" max="330" value="330" class="populationslider" id="population_slider">
 </div>
 <fieldset>
     <div name="color_grid" id="color_grid" hidden>
         <label for="amenities">Color grid</label>
+        <div>x axis: <strong>population density</strong></div>
+        <div>y axis: <strong>accessibility metrics</strong></div>
         <br/>
     </div>
 </fieldset>
@@ -290,6 +279,9 @@ for (const color of grid_colors.slice().reverse().flat()) {
 
     const b = document.createElement('button');
    
+    b.style.width = "36px";
+    b.style.height = "20px";
+    b.style.border = "none";
     b.style.backgroundColor = color;
 
     color_grid.append(b);
@@ -444,7 +436,9 @@ const paintMapWithDensityAndAcessibility = () => {
     map.setPaintProperty("polys", 'fill-extrusion-color', 
 
             ["step", 
-            ["+",  ["floor", ["*", ["min", ["/", ['get', 'population_density'], population_max], 0.99], 3]], ["abs", ["-", ["min", ["/", dataOpForAverage(selected), search_dist], 0.99], 0.99]]],//["+",  ["floor", ["*", ["/", ['get', 'population_density'], 330], 2]],["abs", ["-", ["max", ["/", dataOpForAverage(selected), search_dist], 0.999 ], 1]]],
+            //["min", ["/", ['get', 'population_density'], population_max], 0.99]
+            ["+",  ["floor", ["*", ["abs", ["-", ["min", ["/", dataOpForAverage(selected), search_dist], 0.99], 0.99]], 3]], ["min", ["/", ['get', 'population_density'], population_max], 0.99] ],
+            //["+",  ["floor", ["*", ["min", ["/", ['get', 'population_density'], population_max], 0.99], 3]], ["abs", ["-", ["min", ["/", dataOpForAverage(selected), search_dist], 0.99], 0.99]]],//["+",  ["floor", ["*", ["/", ['get', 'population_density'], 330], 2]],["abs", ["-", ["max", ["/", dataOpForAverage(selected), search_dist], 0.999 ], 1]]],
             grid_colors[0][0], steps[0] , grid_colors[0][1], steps[1], grid_colors[0][2], steps[2],
             grid_colors[1][0], 1 + steps[0],   grid_colors[1][1], 1 + steps[1], grid_colors[1][2], 1 + steps[2],
             grid_colors[2][0], 2 + steps[0],  grid_colors[2][1], 2 + steps[1], grid_colors[2][2], 3, 
