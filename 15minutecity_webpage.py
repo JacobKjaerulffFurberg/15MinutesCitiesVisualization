@@ -12,7 +12,7 @@ def main():
     page_icon="🗺️",
     layout="wide",
     menu_items={
-        'About':"Research project for visualizing accessibility measures for cities. Created with Python3 using Pandana (Foti & Waddell, 2012) and data from OSM (© OpenStreetMap contributors). \n Authors: Anne Havmøller Fellows-Jensen, Sumin Lee & Jacob Kjærulff Furberg"
+        'About':"Research project for visualizing accessibility measures for cities. Created with Python3 using Pandana (Foti & Waddell, 2012) and data from OSM (© OpenStreetMap contributors). Authors: Anne Havmøller Fellows-Jensen, Sumin Lee & Jacob Kjærulff Furberg Supervised by: Maria Sinziiana Astefanoaei"
     },
     initial_sidebar_state="expanded"
     )
